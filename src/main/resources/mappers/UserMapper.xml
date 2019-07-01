@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jtt.app.dao.IUserMapper">
+    <resultMap id="BaseResultMap" type="com.jtt.app.model.User">
+        <id column="uid" property="uid" javaType="java.lang.Long"/>
+        <result column="username" property="username" javaType="java.lang.Long"/>
+        <result column="password" property="password" javaType="java.lang.Long"/>
+        <result column="create_time" property="createTime" javaType="java.lang.String"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    uid, username, password, create_time
+    </sql>
+
+    <insert id="register" parameterType="com.jtt.app.model.User">
+        <selectKey keyProperty="uid" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO user_table values (null, #{username}, #{password}, now())
+    </insert>
+
+
+</mapper>
