@@ -29,4 +29,6 @@ public interface IUserMapper {
     @Select("SELECT COUNT(1) FROM friendship_table WHERE uid = #{uid} AND friend_uid = #{friendUid}")
     int checkIfIsFriend(Long uid, Long friendUid);
 
+    @Select("SELECT * FROM user_table WHERE uid = #{uid}")
+    User getUserInfo(Long receiver);
 }

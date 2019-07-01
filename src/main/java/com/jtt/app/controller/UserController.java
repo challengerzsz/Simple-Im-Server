@@ -37,7 +37,7 @@ public class UserController {
     private RedisTemplate redisTemplate;
 
     @PostMapping("/login")
-    public ServerResponse<String> login(@RequestParam Long uid, @RequestParam String password) {
+    public ServerResponse<User> login(@RequestParam Long uid, @RequestParam String password) {
         if (StringUtils.isEmpty(uid) || StringUtils.isEmpty(password)) {
             return ServerResponse.createByErrorMsg("账号或密码为空，请重试");
         }
@@ -46,7 +46,8 @@ public class UserController {
         if (user != null) {
             String token = UUID.randomUUID().toString();
             redisTemplate.opsForHash().put(UID_TOKEN_PREFIX, uid, token);
-            return ServerResponse.createBySuccess("登录成功", token);
+            user.setToken(token);
+            return ServerResponse.createBySuccess("登录成功", user);
         }
 
         return ServerResponse.createByErrorMsg("账号不存在或密码错误");

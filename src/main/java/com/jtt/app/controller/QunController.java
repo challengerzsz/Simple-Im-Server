@@ -20,8 +20,8 @@ public class QunController {
     @Autowired
     private IQunMapper qunMapper;
 
-    @GetMapping("/addQun/{qunId}")
-    public ServerResponse<String> addQun(@RequestParam Long uid, @PathVariable Long qunId) {
+    @GetMapping("/addQun/{uid}/{qunId}")
+    public ServerResponse<String> addQun(@PathVariable Long uid, @PathVariable Long qunId) {
         int result = qunMapper.insertNewQunRelation(uid, qunId);
         if (result > 0) {
             qunMapper.updateQunCount(result, qunId);

@@ -1,8 +1,12 @@
 package com.jtt.app.dao;
 
+import com.jtt.app.model.Message;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @author : zengshuaizhi
@@ -16,4 +20,7 @@ public interface IMessageMapper {
 
     @Insert("INSERT INTO qun_message_table VALUES (null, #{uid}, #{qunId}, #{msg}, now())")
     int insertNewQunMsg(@Param("uid") Long uid, @Param("qunId") Long qunId, @Param("msg") String msg);
+
+    @Select("SELECT * FROM ")
+    List<Message> getAllPrivateMsgs(Long uid);
 }

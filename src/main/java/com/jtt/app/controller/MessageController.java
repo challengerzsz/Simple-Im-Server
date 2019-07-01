@@ -3,6 +3,7 @@ package com.jtt.app.controller;
 import com.jtt.app.common.ServerResponse;
 import com.jtt.app.dao.IMessageMapper;
 import com.jtt.app.dao.IQunMapper;
+import com.jtt.app.dao.IUserMapper;
 import com.jtt.app.model.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class MessageController {
 
     public static final String QUN_CHAT_TOPIC = "/topic/public";
 
+    public static final int PRIVATE_CHAT_MSG = 0;
+
+    public static final int QUN_CHAT_MSG = 1;
+
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
@@ -31,6 +36,9 @@ public class MessageController {
 
     @Autowired
     private IQunMapper qunMapper;
+
+    @Autowired
+    private IUserMapper userMapper;
 
     @PostMapping("/sendToUser")
     public ServerResponse<String> sendToUser(@RequestParam Long uid, @RequestParam Long receiver, @RequestParam String msg) {
@@ -43,7 +51,8 @@ public class MessageController {
             return ServerResponse.createByErrorMsg("新消息持久化DB失败");
         }
 
-        Message message = new Message(uid, receiver, msg);
+        Message message = new Message(uid, receiver, msg, PRIVATE_CHAT_MSG);
+        message.setSenderInfo(userMapper.getUserInfo(uid));
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiver), PRIVATE_CHAT_TOPIC, message);
 
         return ServerResponse.createBySuccessMsg("发送消息成功");
@@ -60,16 +69,18 @@ public class MessageController {
             return ServerResponse.createByErrorMsg("新消息持久化DB失败");
         }
 
-        Message message = new Message(uid, qunId, msg);
+        Message message = new Message(uid, qunId, msg, QUN_CHAT_MSG);
 
         List<Long> qunMemberList = qunMapper.getQunMembers(qunId);
         for (Long uidTemp : qunMemberList) {
             if (uidTemp == uid) {
                 continue;
             }
+            message.setSenderInfo(userMapper.getUserInfo(uid));
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(uidTemp), QUN_CHAT_TOPIC, message);
         }
 
         return ServerResponse.createBySuccessMsg("发送消息成功");
     }
+
 }
