@@ -8,8 +8,12 @@ import com.jtt.app.model.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,50 +41,66 @@ public class MessageController {
     @Autowired
     private IQunMapper qunMapper;
 
-    @Autowired
-    private IUserMapper userMapper;
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @PostMapping("/sendToUser")
-    public ServerResponse<String> sendToUser(@RequestParam Long uid, @RequestParam Long receiver, @RequestParam String msg) {
+    public ServerResponse<Long> sendToUser(@RequestParam Long uid, @RequestParam Long receiver, @RequestParam String msg) {
         if (StringUtils.isBlank(msg)) {
             return ServerResponse.createBySuccessMsg("发送消息体不能为空");
         }
 
-        int result = messageMapper.insertNewPrivateMsg(uid, receiver, msg);
+        Long timestamp = System.currentTimeMillis();
+        Message message = new Message(uid, receiver, PRIVATE_CHAT_MSG, msg, timestamp);
+        int result = messageMapper.insertNewMsg(message);
         if (result < 0) {
-            return ServerResponse.createByErrorMsg("新消息持久化DB失败");
+            return ServerResponse.createByErrorMsg("新消息持久化DB失败!");
         }
 
-        Message message = new Message(uid, receiver, msg, PRIVATE_CHAT_MSG);
-        message.setSenderInfo(userMapper.getUserInfo(uid));
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiver), PRIVATE_CHAT_TOPIC, message);
 
-        return ServerResponse.createBySuccessMsg("发送消息成功");
+        return ServerResponse.createBySuccess("发送消息成功", timestamp);
     }
 
     @PostMapping("/sendToQun")
-    public ServerResponse<String> sendToQun(@RequestParam Long uid, @RequestParam String msg, @RequestParam Long qunId) {
+    public ServerResponse<Long> sendToQun(@RequestParam Long uid, @RequestParam String msg, @RequestParam Long qunId) {
         if (StringUtils.isBlank(msg)) {
-            return ServerResponse.createBySuccessMsg("发送消息体不能为空");
+            return ServerResponse.createBySuccessMsg("发送消息体不能为空!");
         }
-
-        int result = messageMapper.insertNewQunMsg(uid, qunId, msg);
+        Long timestamp = System.currentTimeMillis();
+        Message message = new Message(uid, qunId, QUN_CHAT_MSG, msg, timestamp);
+        int result = messageMapper.insertNewMsg(message);
         if (result < 0) {
             return ServerResponse.createByErrorMsg("新消息持久化DB失败");
         }
-
-        Message message = new Message(uid, qunId, msg, QUN_CHAT_MSG);
 
         List<Long> qunMemberList = qunMapper.getQunMembers(qunId);
         for (Long uidTemp : qunMemberList) {
             if (uidTemp == uid) {
                 continue;
             }
-            message.setSenderInfo(userMapper.getUserInfo(uid));
             simpMessagingTemplate.convertAndSendToUser(String.valueOf(uidTemp), QUN_CHAT_TOPIC, message);
         }
 
-        return ServerResponse.createBySuccessMsg("发送消息成功");
+        return ServerResponse.createBySuccess("发送消息成功", timestamp);
+    }
+
+    @GetMapping("/getAllUnreadMsg/{uid}/{timestamp}")
+    public ServerResponse<List<Message>> getAllUnreadMsg(@PathVariable Long uid, @PathVariable Long timestamp) {
+        if (timestamp == null) {
+            return ServerResponse.createByErrorMsg("时间戳不能为空");
+        }
+
+        List<Message> allUnreadMsgs = new ArrayList<>();
+        List<Message> allUnreadPriMsgs = messageMapper.getAllUnreadPriMsgs(uid, timestamp, PRIVATE_CHAT_MSG);
+        List<Message> allUnreadQunMsgs = messageMapper.getAllUnreadQunMsgs(uid, timestamp, QUN_CHAT_MSG);
+        if (!CollectionUtils.isEmpty(allUnreadPriMsgs)) {
+            allUnreadMsgs.addAll(allUnreadPriMsgs);
+        }
+        if (!CollectionUtils.isEmpty(allUnreadQunMsgs)) {
+            allUnreadMsgs.addAll(allUnreadQunMsgs);
+        }
+
+        return ServerResponse.createBySuccess("查询成功", allUnreadMsgs);
     }
 
 }

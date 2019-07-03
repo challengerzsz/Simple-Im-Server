@@ -25,11 +25,6 @@ public class UserController {
 
     public static final String UID_TOKEN_PREFIX = "UID-TOKEN-HASH";
 
-
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     @Autowired
     private IUserMapper userMapper;
 
@@ -90,11 +85,23 @@ public class UserController {
             return ServerResponse.createByErrorMsg("您已添加其为好友");
         }
 
+        // 双向好友关系，先这么写
         int result = userMapper.addFriends(uid, friendUid);
-        if (result <= 0) {
+        int result2 = userMapper.addFriends(friendUid, uid);
+        if (result <= 0 || result2 <= 0) {
             return ServerResponse.createByErrorMsg("添加好友失败");
         }
 
         return ServerResponse.createBySuccessMsg("添加好友成功");
+    }
+
+    @GetMapping("/getInfo/{uid}")
+    public ServerResponse<User> getUserInfo(@PathVariable Long uid) {
+        User user = userMapper.getUserInfo(uid);
+        if (user == null) {
+            return ServerResponse.createByErrorMsg("该用户不存在！");
+        }
+
+        return ServerResponse.createBySuccess("查询成功", user);
     }
 }

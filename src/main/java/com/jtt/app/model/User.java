@@ -1,11 +1,13 @@
 package com.jtt.app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * @author : zengshuaizhi
  * @date : 2019-06-30 15:09
  */
+@JsonSerialize(include =  JsonSerialize.Inclusion.NON_NULL)
 public class User {
 
     private Long uid;

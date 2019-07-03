@@ -4,7 +4,6 @@ import com.jtt.app.model.Message;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -15,12 +14,11 @@ import java.util.List;
 @Mapper
 public interface IMessageMapper {
 
-    @Insert("INSERT INTO private_message_table VALUES (null, #{uid}, #{receiver}, #{msg}, now())")
-    int insertNewPrivateMsg(@Param("uid") Long uid, @Param("receiver") Long receiver, @Param("msg") String msg);
+    @Insert("INSERT INTO message_table VALUES (null, #{sender}, #{receiver}, #{msg}, #{type}, #{createTime})")
+    int insertNewMsg(Message message);
 
-    @Insert("INSERT INTO qun_message_table VALUES (null, #{uid}, #{qunId}, #{msg}, now())")
-    int insertNewQunMsg(@Param("uid") Long uid, @Param("qunId") Long qunId, @Param("msg") String msg);
+    List<Message> getAllUnreadQunMsgs(@Param("uid") Long uid, @Param("timestamp") Long timestamp, @Param("type") Integer type);
 
-    @Select("SELECT * FROM ")
-    List<Message> getAllPrivateMsgs(Long uid);
+    List<Message> getAllUnreadPriMsgs(@Param("uid") Long uid, @Param("timestamp") Long timestamp, @Param("type") Integer type);
+
 }

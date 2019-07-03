@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jtt.app.dao.IQunMapper">
+
+    <resultMap id="BaseResultMap" type="com.jtt.app.model.Qun">
+        <id column="id" property="id" javaType="java.lang.Long"/>
+        <result column="name" property="name" javaType="java.lang.Long"/>
+        <result column="count" property="count" javaType="java.lang.Long"/>
+    </resultMap>
+
+    <insert id="createQun" parameterType="com.jtt.app.model.Qun">
+        <selectKey keyProperty="id" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO qun_table (id, name) VALUES (null, #{name})
+    </insert>
+
+    <insert id="insertBatchNewQunRelation">
+        INSERT INTO qun_relation_table VALUES
+        <foreach collection="list" item="item" index="index" separator="," >
+            (null, #{item}, #{qunId})
+        </foreach>
+
+    </insert>
+
+</mapper>

@@ -1,6 +1,5 @@
 package com.jtt.app.dao;
 
-import com.jtt.app.common.ServerResponse;
 import com.jtt.app.model.Qun;
 import org.apache.ibatis.annotations.*;
 
@@ -16,6 +15,8 @@ public interface IQunMapper {
     @Insert("INSERT INTO qun_relation_table VALUES (null, #{uid}, #{qunId})")
     int insertNewQunRelation(@Param("uid") Long uid, @Param("qunId") Long qunId);
 
+    int insertBatchNewQunRelation(@Param("list") List<Long> uids, @Param("qunId") Long qunId);
+
     @Select("SELECT uid FROM qun_relation_table WHERE qun_id = #{qunId}")
     List<Long> getQunMembers(Long qunId);
 
@@ -27,4 +28,9 @@ public interface IQunMapper {
 
     @Select("SELECT * FROM qun_table")
     List<Qun> getQunList();
+
+    int createQun(Qun newQun);
+
+    @Select("SELECT * FROM qun_table WHERE id IN (SELECT qun_id FROM qun_relation_table WHERE uid = #{uid})")
+    List<Qun> getJoinedQun(Long uid);
 }

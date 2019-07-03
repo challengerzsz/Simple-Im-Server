@@ -13,19 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Message {
 
+    private Long id;
     private Long sender;
-    private User senderInfo;
     private Long receiver;
     private String msg;
     /**
      * 0 私聊 1 群聊
      */
     private Integer type;
+    private Long createTime;
 
-    public Message(Long sender, Long receiver, String msg, Integer type) {
+    public Message(Long sender, Long receiver, Integer type, String msg, Long createTime) {
         this.sender = sender;
         this.receiver = receiver;
         this.msg = msg;
+        this.createTime = createTime;
         this.type = type;
     }
 }
